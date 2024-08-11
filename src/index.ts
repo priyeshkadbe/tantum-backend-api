@@ -1,6 +1,9 @@
 import bodyParser from "body-parser";
+
+import cors from "cors"; // Import the CORS middleware
 import express from "express";
 import { PORT } from "./config";
+
 import apiRouter from "./routes/index";
 
 const app = express();
@@ -12,9 +15,10 @@ const app = express();
  * and defines the API routes using the `apiRouter`. Finally, it starts the server on the specified port.
  */
 const configureAndStartServer = () => {
-  // Middleware to parse incoming JSON requests
-  app.use(bodyParser.json());
+  app.use(cors());
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
   // Set up the base route for all API endpoints
   app.use("/api", apiRouter);
 

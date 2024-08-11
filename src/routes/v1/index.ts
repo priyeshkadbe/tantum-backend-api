@@ -14,6 +14,6 @@ const router = express.Router();
  * The `getBalances` middleware might, for example, validate request data, authenticate the user,
  * or perform other preliminary checks before the request reaches the controller.
  */
-router.get("/balances", getBalances, getBalancesController);
+router.post("/balances", getBalances, getBalancesController);
 
 export default router;
