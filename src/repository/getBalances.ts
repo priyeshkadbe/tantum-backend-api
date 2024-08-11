@@ -1,32 +1,56 @@
+import { isAddress } from "viem/utils";
 import {
   getBinanceSmartChainBalances,
   getBitcoinBalances,
+  getEthereumBalances,
   getPolygonBalances,
 } from "./balances";
+import validate from "bitcoin-address-validation";
 
 /**
- * Fetches balances from both Polygon and Binance Smart Chain networks.
+ * Fetches balances from various cryptocurrency networks based on the provided addresses.
  *
  * @param addresses - An array of cryptocurrency addresses to fetch balances for.
  *
- * @returns An object containing balances from both Polygon and Binance Smart Chain networks,
- * or `null` if an error occurs.
+ * @returns An object containing balances from the requested networks,
+ * or null if an error occurs.
  */
 const getBalances = async (addresses: string[]) => {
-  try {
-    // Fetch balances from both Polygon and Binance Smart Chain networks in parallel
-    const [polygonBalances, binanceSmartChainBalances, bitcoinBalances] =
-      await Promise.all([
-        getPolygonBalances(addresses),
-        getBinanceSmartChainBalances(addresses),
-        getBitcoinBalances(addresses),
-      ]);
+  // Filter and validate Ethereum addresses
+  const ethereumAddresses: string[] = addresses.filter((address: string) => {
+    return isAddress(address);
+  });
 
-    // Return the fetched balances as an object
-    return {
-      polygonBalances,
-      binanceSmartChainBalances,
-    };
+  // Filter and validate Bitcoin addresses
+  const bitcoinAddresses: string[] = addresses.filter((address: string) => {
+    return validate(address);
+  });
+
+  try {
+    // Initialize an empty object to store the balances
+    const balances: any = {};
+
+    // If there are Bitcoin addresses, fetch Bitcoin balances
+    if (bitcoinAddresses.length > 0) {
+      balances.bitcoinBalances = await getBitcoinBalances(bitcoinAddresses);
+    }
+
+    // If there are Ethereum addresses, fetch balances from Ethereum, Polygon, and Binance Smart Chain
+    if (ethereumAddresses.length > 0) {
+      const [polygonBalances, binanceSmartChainBalances, ethereumBalances] =
+        await Promise.all([
+          getPolygonBalances(ethereumAddresses),
+          getBinanceSmartChainBalances(ethereumAddresses),
+          getEthereumBalances(ethereumAddresses),
+        ]);
+
+      balances.polygonBalances = polygonBalances;
+      balances.binanceSmartChainBalances = binanceSmartChainBalances;
+      balances.ethereumBalances = ethereumBalances;
+    }
+
+    // Return the fetched balances
+    return balances;
   } catch (error) {
     // Log any errors that occur during the fetching process
     console.error("Error fetching balances:", error);

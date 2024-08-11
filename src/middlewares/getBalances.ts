@@ -1,3 +1,4 @@
+import validate from "bitcoin-address-validation";
 import { NextFunction, Request, Response } from "express";
 import { isAddress } from "viem";
 import { ErrorMessages, ErrorNames, StatusCodesConstants } from "../constants";
@@ -24,7 +25,6 @@ export const getBalances = async (
   try {
     // Extract 'addresses' from the request body
     const { addresses } = req.body;
-    console.log({ addresses });
 
     // Validate that 'addresses' is an array
     if (!addresses || !Array.isArray(addresses)) {
@@ -37,16 +37,16 @@ export const getBalances = async (
     }
 
     // Check each address in the array to ensure it's valid
-    // for (const address of addresses) {
-    //   if (!isAddress(address)) {
-    //     throw new AppErrors(
-    //       ErrorNames.VALIDATION_ERROR,
-    //       ErrorMessages.INVALID_ADDRESS_SIMPLE,
-    //       ErrorMessages.INVALID_ADDRESS(address),
-    //       StatusCodesConstants.BAD_REQUEST
-    //     );
-    //   }
-    // }
+    for (const address of addresses) {
+      if (!isAddress(address) && !validate(address)) {
+        throw new AppErrors(
+          ErrorNames.VALIDATION_ERROR,
+          ErrorMessages.INVALID_ADDRESS_SIMPLE,
+          ErrorMessages.INVALID_ADDRESS(address),
+          StatusCodesConstants.BAD_REQUEST
+        );
+      }
+    }
 
     // Fetch the balances for the validated addresses
     const balances = await getBalancesRepository(addresses);

@@ -19,22 +19,7 @@ const getBalances = async (req: Request, res: Response) => {
   try {
     // Extract 'addresses' from the request body
     const { addresses } = req.body;
-    console.log({ addresses });
-
-    const ethereumAddresses: string[] = [];
-    const bitcoinAddresses: string[] = [];
-
-    // Separate Ethereum and Bitcoin addresses into different arrays
-    console.log("Before separating addresses");
-    // addresses.forEach((address: string) => {
-    //   if (isAddress(address)) {
-    //     ethereumAddresses.push(address);
-    //   } else if (validate(address)) {
-    //     bitcoinAddresses.push(address);
-    //   }
-    // });
-    console.log("After separating addresses");
-    console.log({ ethereumAddresses, bitcoinAddresses });
+    
     // Fetch the balances for the validated addresses
     const balances = await getBalancesRepository(addresses);
 
